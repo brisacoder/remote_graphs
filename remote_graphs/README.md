@@ -6,7 +6,7 @@ This repository contains a Agent Protocol FastAPI application. It also includes 
 
 ## Requirements
 
-- Python 3.9+
+- Python 3.12+
 - A virtual environment is recommended for isolating dependencies.
 
 ## Installation
