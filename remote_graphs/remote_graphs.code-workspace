@@ -1,0 +1,17 @@
+{
+	"folders": [
+		{
+			"path": ".."
+		},
+		{
+			"path": "../../langgraph_book"
+		},
+		{
+			"path": "../../agent_interop"
+		},
+		{
+			"path": "../../remote-agent"
+		}
+	],
+	"settings": {}
+}
