@@ -3,7 +3,7 @@
 [MASTER]
 # AP generated files from LC. We have no control over them
 ignore =.venv
-
+ignore-paths = remote_graphs\app\models\
 
 [FORMAT]
 # Option A: Raise the max line length so you don't get warnings
