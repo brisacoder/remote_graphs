@@ -15,7 +15,7 @@ class Settings(BaseSettings):
     API_V1_STR: str = "/api/v1"
     ENVIRONMENT: Literal["local", "staging", "production"] = "local"
 
-    PROJECT_NAME: str = "Agentic DB API"
+    PROJECT_NAME: str = "Remote Graphs Application"
     DESCRIPTION: str = "Application to demonstrate remote graphs"
 
 
