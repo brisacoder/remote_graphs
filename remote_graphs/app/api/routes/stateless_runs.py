@@ -47,6 +47,7 @@ def run_stateless_runs_post(body: RunCreateStateless) -> Union[Any, ErrorRespons
                 detail=msg,
             )
 
+        message_id = ""
         # Validate the config section: ensure that config.tags is a non-empty list.
         if (metadata := payload.get("metadata", None)) is not None:
             message_id = metadata.get("id")
@@ -64,9 +65,7 @@ def run_stateless_runs_post(body: RunCreateStateless) -> Union[Any, ErrorRespons
         # Retrieve the 'messages' list from the 'input' dictionary.
         messages = input_field.get("messages")
         if not isinstance(messages, list) or not messages:
-            raise ValueError(
-                "The 'input.messages' field should be a non-empty list."
-            )
+            raise ValueError("The 'input.messages' field should be a non-empty list.")
 
         # Access the first message in the list.
         first_message = messages[0]
@@ -95,20 +94,23 @@ def run_stateless_runs_post(body: RunCreateStateless) -> Union[Any, ErrorRespons
             detail=exc,
         )
 
-    messages = {"messages": [{"role": "assistant", "content": "Received remote request"}]}
+    messages = {
+        "messages": [{"role": "assistant", "content": "Received remote request"}]
+    }
 
     # payload to send to autogen server at /runs endpoint
     payload = {
         "agent_id": agent_id,
         "output": messages,
         "model": "gpt-4o",
-        "metadata": {"id": message_id}
+        "metadata": {"id": message_id},
     }
 
     logger.info(f"Payload: {payload}")
 
     # In a real application, additional processing (like starting a background task) would occur here.
     return JSONResponse(content=payload, status_code=status.HTTP_200_OK)
+
 
 @router.post(
     "/runs/stream",
