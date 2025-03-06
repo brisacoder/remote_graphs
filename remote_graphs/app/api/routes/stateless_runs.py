@@ -9,7 +9,6 @@ from fastapi import APIRouter, HTTPException, status
 from fastapi.responses import JSONResponse
 from models.models import Any, ErrorResponse, RunCreateStateless, Union
 
-
 router = APIRouter(tags=["Stateless Runs"])
 logger = logging.getLogger(__name__)  # This will be "app.api.routes.<name>"
 

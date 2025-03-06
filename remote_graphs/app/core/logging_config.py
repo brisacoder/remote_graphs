@@ -1,7 +1,7 @@
+import json
 import logging
 import logging.config
 import os
-import json
 import traceback
 from pathlib import Path
 from typing import Dict
