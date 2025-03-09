@@ -16,6 +16,10 @@ from fastapi.routing import APIRoute
 from starlette.middleware.cors import CORSMiddleware
 
 
+# Define logger at the module level
+logger = logging.getLogger("app")
+
+
 def load_environment_variables(env_file: str | None = None) -> None:
     """
     Load environment variables from a .env file safely.
@@ -198,7 +202,6 @@ def main() -> None:
     """
     configure_logging()  # Apply global logging settings
 
-    logger = logging.getLogger("app")  # Default logger for main script
     logger.info("Starting FastAPI application...")
 
     # Load environment variables before starting the application
