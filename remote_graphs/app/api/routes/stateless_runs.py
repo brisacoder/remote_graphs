@@ -76,9 +76,10 @@ def run_stateless_runs_post(body: RunCreateStateless) -> Union[Any, ErrorRespons
         # Extract the 'content' from the first message.
         human_input_content = first_message.get("content")
         if human_input_content is None:
-            raise ValueError(
-                "Missing 'content' in the first message of 'input.messages'."
-            )
+            raise HTTPException(
+                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                detail="Missing 'content' in the first message of 'input.messages'."
+                )
 
     except HTTPException as http_exc:
         # Log HTTP exceptions and re-raise them so that FastAPI can generate the appropriate response.
