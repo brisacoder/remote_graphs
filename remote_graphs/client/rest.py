@@ -181,6 +181,12 @@ def node_remote_request_stateless(state: GraphState) -> Dict[str, Any]:
     return {"messages": [AIMessage(content=json.dumps(error_msg))]}
 
 
+# Graph node that makes a stateless request to the Remote Graph Server
+def end_node(state: GraphState) -> Dict[str, Any]:
+    logger.info(f"Thread end: {state.values()}")
+    return {"messages": []}
+
+
 # Build the state graph
 def build_graph() -> Any:
     """
@@ -191,8 +197,10 @@ def build_graph() -> Any:
     """
     builder = StateGraph(GraphState)
     builder.add_node("node_remote_request_stateless", node_remote_request_stateless)
+    builder.add_node("end_node", end_node)
     builder.add_edge(START, "node_remote_request_stateless")
-    builder.add_edge("node_remote_request_stateless", END)
+    builder.add_edge("node_remote_request_stateless", "end_node")
+    builder.add_edge("end_node", END)
     return builder.compile()
 
 

@@ -15,7 +15,6 @@ from fastapi.responses import FileResponse
 from fastapi.routing import APIRoute
 from starlette.middleware.cors import CORSMiddleware
 
-
 # Define logger at the module level
 logger = logging.getLogger("app")
 

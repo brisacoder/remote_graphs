@@ -105,6 +105,6 @@ def configure_logging() -> logging.Logger:
     logging_config = get_logging_config(log_file, log_level)
     logging.config.dictConfig(logging_config)
 
-    logger = logging.getLogger("graph_client")
+    logger = logging.getLogger("local_agent")
     logger.info("Client logging is initialized.")
     return logger
