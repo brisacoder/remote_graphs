@@ -2,7 +2,7 @@
 
 import os
 import sys
-from typing import Annotated, Any, Dict, List, TypedDict
+from typing import Annotated, Any, Dict, List, Optional, TypedDict
 
 
 # Get the absolute path of the parent directory
@@ -91,13 +91,45 @@ def build_graph() -> Any:
     return builder.compile()
 
 
-def invoke_graph(messages: List[Dict[str, str]], graph: Any = None):
+def invoke_graph(messages: List[Dict[str, str]], graph: Optional[Any] = None) -> Optional[Dict[str, Any]]:
+    """
+    Invokes the graph with the given messages and safely extracts the last AI-generated message.
+
+    - Logs errors if keys or indices are missing.
+    - Ensures the graph is initialized if not provided.
+    - Returns a meaningful response even if an error occurs.
+
+    :param messages: A list of message dictionaries.
+    :param graph: An optional graph object to use; will be built if not provided.
+    :return: The last AI-generated message or an error response.
+    """
     inputs = {"messages": messages}
     logger.debug({"event": "invoking_graph", "inputs": inputs})
-    if not graph:
-        graph = build_graph()
-    result = graph.invoke(inputs)
-    logger.info({"event": "final_result", "result": result})
+
+    try:
+        if not graph:
+            graph = build_graph()
+
+        result = graph.invoke(inputs)
+
+        if not isinstance(result, dict):
+            raise TypeError(f"Graph invocation returned non-dict result: {type(result)}")
+
+        messages_list = result.get("messages")
+        if not isinstance(messages_list, list) or not messages_list:
+            raise ValueError("Graph result does not contain a valid 'messages' list.")
+
+        last_message = messages_list[-1]
+        if not isinstance(last_message, dict) or "content" not in last_message:
+            raise KeyError("Last message does not contain 'content'.")
+
+        ai_message_content = last_message["content"]
+        print(ai_message_content)
+        return last_message
+
+    except Exception as e:
+        logger.error(f"Error invoking graph: {e}", exc_info=True)
+        return AIMessage(content="AI response unavailable.").model_dump()
 
 
 def main():
