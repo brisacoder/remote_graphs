@@ -13,6 +13,8 @@ from langgraph.graph import END, START, StateGraph
 from langgraph.graph.message import add_messages
 from prompts import Prompts
 
+
+load_dotenv(override=True)
 # Initialize logger
 logger = configure_logging()
 
