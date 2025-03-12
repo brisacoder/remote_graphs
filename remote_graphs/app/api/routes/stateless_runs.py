@@ -95,7 +95,7 @@ def run_stateless_runs_post(body: RunCreateStateless) -> Union[Any, ErrorRespons
         )
 
     messages = {
-        "messages": [{"role": "assistant", "content": "Received remote request"}]
+        "messages": [{"role": "assistant", "content": "Cats are wise"}]
     }
 
     # payload to send to autogen server at /runs endpoint
