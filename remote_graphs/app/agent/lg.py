@@ -1,16 +1,24 @@
 # Build the state graph
 
 import os
+import sys
 from typing import Annotated, Any, Dict, List, TypedDict
+
+
+# Get the absolute path of the parent directory
+parent_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+
+# Add the parent directory to sys.path
+sys.path.insert(0, parent_dir)
 
 from core.logging_config import configure_logging
 from dotenv import find_dotenv, load_dotenv
 from langchain_core.messages import AIMessage, BaseMessage, HumanMessage
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
-from langchain_core.runnables.config import RunnableConfig
 from langchain_openai import ChatOpenAI
 from langgraph.graph import END, START, StateGraph
 from langgraph.graph.message import add_messages
+
 from prompts import Prompts
 
 
@@ -83,14 +91,17 @@ def build_graph() -> Any:
     return builder.compile()
 
 
-def invoke_graph(messages: List[Dict[str, str]]):
+def invoke_graph(messages: List[Dict[str, str]], graph: Any = None):
     inputs = {"messages": messages}
     logger.debug({"event": "invoking_graph", "inputs": inputs})
+    if not graph:
+        graph = build_graph()
     result = graph.invoke(inputs)
     logger.info({"event": "final_result", "result": result})
 
 
 def main():
+    graph = build_graph()
     inputs = {"messages": [HumanMessage(content="Write a story about a cat")]}
     logger.info({"event": "invoking_graph", "inputs": inputs})
     result = graph.invoke(inputs)
@@ -99,5 +110,5 @@ def main():
 
 # Main execution
 if __name__ == "__main__":
-    graph = build_graph()
-    main()
+    invoke_graph([{"role": "user", "content": "write a story about a cat"}])
+    # main()
