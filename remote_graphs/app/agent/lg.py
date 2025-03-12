@@ -83,11 +83,21 @@ def build_graph() -> Any:
     return builder.compile()
 
 
-# Main execution
-if __name__ == "__main__":
+def invoke_graph(messages: List[Dict[str, str]]):
+    inputs = {"messages": messages}
+    logger.debug({"event": "invoking_graph", "inputs": inputs})
+    result = graph.invoke(inputs)
+    logger.info({"event": "final_result", "result": result})
 
-    graph = build_graph()
+
+def main():
     inputs = {"messages": [HumanMessage(content="Write a story about a cat")]}
     logger.info({"event": "invoking_graph", "inputs": inputs})
     result = graph.invoke(inputs)
     logger.info({"event": "final_result", "result": result})
+
+
+# Main execution
+if __name__ == "__main__":
+    graph = build_graph()
+    main()
