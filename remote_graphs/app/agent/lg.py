@@ -101,7 +101,7 @@ def invoke_graph(messages: List[Dict[str, str]], graph: Optional[Any] = None) ->
 
     :param messages: A list of message dictionaries.
     :param graph: An optional graph object to use; will be built if not provided.
-    :return: The last AI-generated message or an error response.
+    :return: The last AI-generated (AIMessage) message or AIMessage with an error response.
     """
     inputs = {"messages": messages}
     logger.debug({"event": "invoking_graph", "inputs": inputs})

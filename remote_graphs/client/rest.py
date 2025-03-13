@@ -87,7 +87,7 @@ class GraphState(TypedDict):
 
 
 # Graph node that makes a stateless request to the Remote Graph Server
-def node_remote_request_stateless(state: GraphState) -> Dict[str, Any]:
+def node_remote_agent(state: GraphState) -> Dict[str, Any]:
     """
     Sends a stateless request to the Remote Graph Server.
 
@@ -196,10 +196,10 @@ def build_graph() -> Any:
         StateGraph: A compiled LangGraph state graph.
     """
     builder = StateGraph(GraphState)
-    builder.add_node("node_remote_request_stateless", node_remote_request_stateless)
+    builder.add_node("node_remote_agent", node_remote_agent)
     builder.add_node("end_node", end_node)
-    builder.add_edge(START, "node_remote_request_stateless")
-    builder.add_edge("node_remote_request_stateless", "end_node")
+    builder.add_edge(START, "node_remote_agent")
+    builder.add_edge("node_remote_agent", "end_node")
     builder.add_edge("end_node", END)
     return builder.compile()
 
