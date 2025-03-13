@@ -16,7 +16,7 @@ from fastapi.routing import APIRoute
 from starlette.middleware.cors import CORSMiddleware
 
 # Define logger at the module level
-logger = logging.getLogger("app")
+logger = configure_logging()  # Apply global logging settings
 
 
 def load_environment_variables(env_file: str | None = None) -> None:
@@ -199,7 +199,6 @@ def main() -> None:
     Returns:
         None
     """
-    configure_logging()  # Apply global logging settings
 
     logger.info("Starting FastAPI application...")
 

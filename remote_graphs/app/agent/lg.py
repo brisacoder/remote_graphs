@@ -1,5 +1,6 @@
 # Build the state graph
 
+import logging
 import os
 import sys
 from typing import Annotated, Any, Dict, List, Optional, TypedDict
@@ -8,6 +9,7 @@ from typing import Annotated, Any, Dict, List, Optional, TypedDict
 from dotenv import load_dotenv
 from langchain_core.messages import AIMessage, BaseMessage, HumanMessage
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
+from langchain_core.messages.utils import convert_to_openai_messages
 from langchain_openai import ChatOpenAI
 from langgraph.graph import END, START, StateGraph
 from langgraph.graph.message import add_messages
@@ -18,13 +20,10 @@ parent_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 # Add the parent directory to sys.path
 sys.path.insert(0, parent_dir)
 
-from core.logging_config import configure_logging   # noqa: E402
-from prompts import Prompts
+from core.logging_config import configure_logging  # noqa: E402
+from agent.prompts import Prompts
 
-
-load_dotenv(override=True)
-# Initialize logger
-logger = configure_logging()
+logger = logging.getLogger(__file__)
 
 
 # Define the graph state
@@ -91,7 +90,9 @@ def build_graph() -> Any:
     return builder.compile()
 
 
-def invoke_graph(messages: List[Dict[str, str]], graph: Optional[Any] = None) -> Optional[Dict[str, Any]]:
+def invoke_graph(
+    messages: List[Dict[str, str]], graph: Optional[Any] = None
+) -> Optional[dict[Any, Any] | list[dict[Any, Any]]]:
     """
     Invokes the graph with the given messages and safely extracts the last AI-generated message.
 
@@ -101,7 +102,7 @@ def invoke_graph(messages: List[Dict[str, str]], graph: Optional[Any] = None) ->
 
     :param messages: A list of message dictionaries.
     :param graph: An optional graph object to use; will be built if not provided.
-    :return: The last AI-generated (AIMessage) message or AIMessage with an error response.
+    :return: The list of all messages returned by the graph
     """
     inputs = {"messages": messages}
     logger.debug({"event": "invoking_graph", "inputs": inputs})
@@ -113,26 +114,31 @@ def invoke_graph(messages: List[Dict[str, str]], graph: Optional[Any] = None) ->
         result = graph.invoke(inputs)
 
         if not isinstance(result, dict):
-            raise TypeError(f"Graph invocation returned non-dict result: {type(result)}")
+            raise TypeError(
+                f"Graph invocation returned non-dict result: {type(result)}"
+            )
 
-        messages_list = result.get("messages")
+        messages_list = convert_to_openai_messages(result.get("messages", []))
         if not isinstance(messages_list, list) or not messages_list:
             raise ValueError("Graph result does not contain a valid 'messages' list.")
 
         last_message = messages_list[-1]
         if not isinstance(last_message, dict) or "content" not in last_message:
-            raise KeyError("Last message does not contain 'content'.")
+            raise KeyError(f"Last message does not contain 'content': {last_message}")
 
         ai_message_content = last_message["content"]
-        print(ai_message_content)
-        return last_message
+        logger.info(f"AI message content: {ai_message_content}")
+        return messages_list
 
     except Exception as e:
         logger.error(f"Error invoking graph: {e}", exc_info=True)
-        return AIMessage(content="AI response unavailable.").model_dump()
+        return [{"role": "assistant", "content": "Error processing user message"}]
 
 
 def main():
+    # Initialize logger
+    logger = configure_logging()
+    load_dotenv(override=True)
     graph = build_graph()
     inputs = {"messages": [HumanMessage(content="Write a story about a cat")]}
     logger.info({"event": "invoking_graph", "inputs": inputs})
