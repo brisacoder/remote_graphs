@@ -4,11 +4,12 @@
 import json
 import traceback
 import uuid
-from typing import Annotated, Any, Dict, List, TypedDict
+from typing import Annotated, Any, Dict, List, Literal, TypedDict
 
 import requests
 from dotenv import find_dotenv, load_dotenv
 from langchain_core.messages import AIMessage, BaseMessage, HumanMessage
+from langgraph.types import Command
 from langgraph.graph import END, START, StateGraph
 from langgraph.graph.message import add_messages
 from langchain_core.messages.utils import convert_to_openai_messages
@@ -85,10 +86,23 @@ class GraphState(TypedDict):
     """Represents the state of the graph, containing a list of messages."""
 
     messages: Annotated[List[BaseMessage], add_messages]
+    exception_msg: str
+
+
+def default_state() -> Dict:
+    """
+    A benign default return for nodes in the graph
+    that do not modify state
+    """
+    return {
+        "messages": [],
+    }
 
 
 # Graph node that makes a stateless request to the Remote Graph Server
-def node_remote_agent(state: GraphState) -> Dict[str, Any]:
+def node_remote_agent(
+    state: GraphState,
+) -> Command[Literal["exception_node", "end_node"]]:
     """
     Sends a stateless request to the Remote Graph Server.
 
@@ -100,11 +114,13 @@ def node_remote_agent(state: GraphState) -> Dict[str, Any]:
     """
     if not state["messages"]:
         logger.error(json.dumps({"error": "GraphState contains no messages"}))
-        return {"messages": [HumanMessage(content="Error: No messages in state")]}
+        return Command(
+            goto="exception_node",
+            update={"exception_text": "Error: No messages in state"},
+        )
 
     # Extract the latest user query
     human_message = state["messages"][-1].content
-    # query = state["messages"][-1].content
     logger.info(json.dumps({"event": "sending_request", "human": human_message}))
 
     # Request headers
@@ -141,7 +157,14 @@ def node_remote_agent(state: GraphState) -> Dict[str, Any]:
 
         logger.info(decoded_response)
 
-        return {"messages": decoded_response.get("messages", [])}
+        messages = decoded_response.get("messages", [])
+
+        # This is tricky. In multi-turn conversation we should only add new messages
+        # produced by the remote agent, otherwise we will have duplicates.
+        # In this App we will assume remote agent only create a single new message but
+        # this is not always true
+
+        return Command(goto="end_node", update={"messages": messages[-1]})
 
     except (Timeout, RequestsConnectionError) as conn_err:
         error_msg = {
@@ -149,7 +172,10 @@ def node_remote_agent(state: GraphState) -> Dict[str, Any]:
             "exception": str(conn_err),
         }
         logger.error(json.dumps(error_msg))
-        return {"messages": [HumanMessage(content=json.dumps(error_msg))]}
+
+        return Command(
+            goto="exception_node", update={"exception_msg": json.dumps(error_msg)}
+        )
 
     except HTTPError as http_err:
         error_msg = {
@@ -158,17 +184,23 @@ def node_remote_agent(state: GraphState) -> Dict[str, Any]:
             "exception": str(http_err),
         }
         logger.error(json.dumps(error_msg))
-        return {"messages": [HumanMessage(content=json.dumps(error_msg))]}
+        return Command(
+            goto="exception_node", update={"exception_msg": json.dumps(error_msg)}
+        )
 
     except RequestException as req_err:
         error_msg = {"error": "Request failed", "exception": str(req_err)}
         logger.error(json.dumps(error_msg))
-        return {"messages": [HumanMessage(content=json.dumps(error_msg))]}
+        return Command(
+            goto="exception_node", update={"exception_msg": json.dumps(error_msg)}
+        )
 
     except json.JSONDecodeError as json_err:
         error_msg = {"error": "Invalid JSON response", "exception": str(json_err)}
         logger.error(json.dumps(error_msg))
-        return {"messages": [HumanMessage(content=json.dumps(error_msg))]}
+        return Command(
+            goto="exception_node", update={"exception_msg": json.dumps(error_msg)}
+        )
 
     except Exception as e:
         error_msg = {
@@ -177,17 +209,23 @@ def node_remote_agent(state: GraphState) -> Dict[str, Any]:
             "stack_trace": traceback.format_exc(),
         }
         logger.error(json.dumps(error_msg))
+        return Command(
+            goto="exception_node", update={"exception_msg": json.dumps(error_msg)}
+        )
 
     finally:
         session.close()
-
-    return {"messages": [AIMessage(content=json.dumps(error_msg))]}
 
 
 # Graph node that makes a stateless request to the Remote Graph Server
 def end_node(state: GraphState) -> Dict[str, Any]:
     logger.info(f"Thread end: {state.values()}")
-    return {"messages": []}
+    return default_state()
+
+
+def exception_node(state: GraphState):
+    logger.info(f"Exception happen while processing graph: {state["exception_msg"]}")
+    return default_state()
 
 
 # Build the state graph
@@ -201,8 +239,10 @@ def build_graph() -> Any:
     builder = StateGraph(GraphState)
     builder.add_node("node_remote_agent", node_remote_agent)
     builder.add_node("end_node", end_node)
+    builder.add_node("exception_node", exception_node)
+
     builder.add_edge(START, "node_remote_agent")
-    builder.add_edge("node_remote_agent", "end_node")
+    builder.add_edge("exception_node", END)
     builder.add_edge("end_node", END)
     return builder.compile()
 
