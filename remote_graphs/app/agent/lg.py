@@ -5,20 +5,20 @@ import sys
 from typing import Annotated, Any, Dict, List, Optional, TypedDict
 
 
-# Get the absolute path of the parent directory
-parent_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
-
-# Add the parent directory to sys.path
-sys.path.insert(0, parent_dir)
-
-from core.logging_config import configure_logging
-from dotenv import find_dotenv, load_dotenv
+from dotenv import load_dotenv
 from langchain_core.messages import AIMessage, BaseMessage, HumanMessage
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 from langchain_openai import ChatOpenAI
 from langgraph.graph import END, START, StateGraph
 from langgraph.graph.message import add_messages
 
+# Get the absolute path of the parent directory
+parent_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+
+# Add the parent directory to sys.path
+sys.path.insert(0, parent_dir)
+
+from core.logging_config import configure_logging   # noqa: E402
 from prompts import Prompts
 
 
