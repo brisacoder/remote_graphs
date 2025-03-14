@@ -4,7 +4,7 @@
 import json
 import traceback
 import uuid
-from typing import Annotated, Any, Dict, List, Literal, TypedDict
+from typing import Annotated, Any, Dict, List, Literal, Optional, TypedDict
 
 import requests
 from dotenv import find_dotenv, load_dotenv
@@ -251,11 +251,59 @@ def build_graph() -> Any:
     return builder.compile()
 
 
-# Main execution
-if __name__ == "__main__":
+def invoke_graph(
+    messages: List[Dict[str, str]], graph: Optional[Any] = None
+) -> Optional[dict[Any, Any] | list[dict[Any, Any]]]:
+    """
+    Invokes the graph with the given messages and safely extracts the last AI-generated message.
 
+    - Logs errors if keys or indices are missing.
+    - Ensures the graph is initialized if not provided.
+    - Returns a meaningful response even if an error occurs.
+
+    :param messages: A list of message dictionaries in OpenAI format
+    :param graph: An optional graph object to use; internal will be built if not provided.
+    :return: The list of all messages returned by the graph
+    """
+    inputs = {"messages": messages}
+    logger.debug({"event": "invoking_graph", "inputs": inputs})
+
+    try:
+        if not graph:
+            graph = build_graph()
+
+        result = graph.invoke(inputs)
+
+        if not isinstance(result, dict):
+            raise TypeError(
+                f"Graph invocation returned non-dict result: {type(result)}"
+            )
+
+        messages_list = convert_to_openai_messages(result.get("messages", []))
+        if not isinstance(messages_list, list) or not messages_list:
+            raise ValueError("Graph result does not contain a valid 'messages' list.")
+
+        last_message = messages_list[-1]
+        if not isinstance(last_message, dict) or "content" not in last_message:
+            raise KeyError(f"Last message does not contain 'content': {last_message}")
+
+        ai_message_content = last_message["content"]
+        logger.info(f"AI message content: {ai_message_content}")
+        return messages_list
+
+    except Exception as e:
+        logger.error(f"Error invoking graph: {e}", exc_info=True)
+        return [{"role": "assistant", "content": "Error processing user message"}]
+
+
+def main():
     graph = build_graph()
     inputs = {"messages": [HumanMessage(content="Write a story about a cat")]}
     logger.info({"event": "invoking_graph", "inputs": inputs})
     result = graph.invoke(inputs)
     logger.info({"event": "final_result", "result": result})
+
+
+# Main execution
+if __name__ == "__main__":
+    main()
