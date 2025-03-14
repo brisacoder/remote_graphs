@@ -14,5 +14,6 @@ requests==2.32.3
 langgraph-cli[inmem]==0.1.74
 langchain_openai==0.3.8
 python-json-logger==3.3.0
+ap-rest-client==0.0.4
 # If you need to debug langgraph studio
 # debugpy==1.8.12
