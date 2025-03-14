@@ -1,0 +1,7 @@
+{
+    "dependencies": ["."],
+    "graphs": {
+        "ap_local_agent": "./rest.py:build_local_graph"
+    },
+    "env": "./.env"
+}
