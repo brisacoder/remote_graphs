@@ -15,8 +15,13 @@ from fastapi.responses import FileResponse
 from fastapi.routing import APIRoute
 from starlette.middleware.cors import CORSMiddleware
 
-# Define logger at the module level
-logger = configure_logging()  # Apply global logging settings
+
+# Step 1: Initialize a basic logger first (to avoid errors before full configuration)
+logger = logging.getLogger()
+logger.setLevel(logging.INFO)  # Minimal level before full configuration
+handler = logging.StreamHandler()
+handler.setFormatter(logging.Formatter("%(asctime)s - %(levelname)s - %(message)s"))
+logger.addHandler(handler)
 
 
 def load_environment_variables(env_file: str | None = None) -> None:
@@ -42,9 +47,9 @@ def load_environment_variables(env_file: str | None = None) -> None:
 
     if env_path:
         load_dotenv(env_path, override=True)
-        logging.info(f".env file loaded from {env_path}")
+        logger.info(f".env file loaded from {env_path}")
     else:
-        logging.warning("No .env file found. Ensure environment variables are set.")
+        logger.warning("No .env file found. Ensure environment variables are set.")
 
 
 @asynccontextmanager
@@ -199,6 +204,11 @@ def main() -> None:
     Returns:
         None
     """
+
+    # Load environment variables before starting the application
+    load_environment_variables()
+
+    _ = configure_logging()  # Apply global logging settings
 
     logger.info("Starting FastAPI application...")
 
