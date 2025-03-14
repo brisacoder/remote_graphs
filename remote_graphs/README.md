@@ -2,7 +2,7 @@
 
 ## Overview
 
-This repository contains a Agent Protocol FastAPI application. It also includes examples of JSON-based logging, CORS configuration, and route tagging.
+This repository contains an Agent Protocol FastAPI application. It also includes examples of JSON-based logging, CORS configuration, and route tagging.
 
 ## Requirements
 
@@ -15,7 +15,7 @@ This repository contains a Agent Protocol FastAPI application. It also includes 
 
    ```bash
    git clone https://github.com/brisacoder/remote_graphs/
-   cd your-repo
+   cd remote_graphs
    ```
 
 2. Install the dependencies:
@@ -58,13 +58,14 @@ This output confirms that:
 
 ### Client
 
-Change to `client` folder
+Change to the `client` folder:
 
 ```bash
+cd client
 python rest.py
 ```
 
-On a successful remote graph run you should see logs in your terminal similar to the snippet below:
+On a successful remote graph run, you should see logs in your terminal similar to the snippet below:
 
 ```bash
 {"timestamp": "2025-03-03 16:17:10,286", "level": "INFO", "message": "{'event': 'final_result', 'result': {'messages': [HumanMessage(content='Write a story about a bunny', additional_kwargs={}, response_metadata={}, id='26ab296b-c144-45a7-ad98-18d6245e7fff'), AIMessage(content='Received remote request', additional_kwargs={}, response_metadata={}, id='f7c1a983-7f71-416c-983b-39363e401f8d')]}}", "module": "rest", "function": "<module>", "line": 208, "logger": "graph_client", "pid": 15708}
@@ -86,19 +87,26 @@ http://0.0.0.0:8123/docs
 
 (Adjust the host and port if you override them via environment variables.)
 
-## Running as a LangGraph Studio
+## Running as a LangGraph Studio Application
 
-You need to install Rust: <https://www.rust-lang.org/tools/install>
+Run the server:
 
-Run the server
-
-Change to `client` folder
+Change to the `client` folder:
 
 ```bash
+cd client
 langgraph dev
 ```
 
 ![Langgraph Studio](./docs/imgs/studio.png "Studio")
+
+## Usage
+
+To use the application, follow these steps:
+
+1. Start the server as described in the "Running the Application" section.
+2. Open your browser and navigate to the API documentation URL.
+3. Use the provided endpoints to interact with the application.
 
 ## Contributing
 
