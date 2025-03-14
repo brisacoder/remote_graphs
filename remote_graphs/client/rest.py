@@ -14,8 +14,12 @@ from langgraph.graph import END, START, StateGraph
 from langgraph.graph.message import add_messages
 from langchain_core.messages.utils import convert_to_openai_messages
 from logging_config import configure_logging
-from requests.exceptions import ConnectionError as RequestsConnectionError
-from requests.exceptions import HTTPError, RequestException, Timeout
+from requests.exceptions import (
+    ConnectionError as RequestsConnectionError,
+    HTTPError,
+    RequestException,
+    Timeout,
+)
 
 # Initialize logger
 logger = configure_logging()
