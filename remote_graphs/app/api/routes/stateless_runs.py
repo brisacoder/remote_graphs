@@ -36,7 +36,7 @@ def run_stateless_runs_post(body: RunCreateStateless) -> Union[Any, ErrorRespons
 
         # Extract assistant_id from the payload
         agent_id = payload.get("agent_id")
-        logging.debug(f"Agent id: {agent_id}")
+        logging.debug("Agent id: %s", agent_id)
 
         # Validate that the assistant_id is not empty.
         if not payload.get("agent_id"):
@@ -93,7 +93,7 @@ def run_stateless_runs_post(body: RunCreateStateless) -> Union[Any, ErrorRespons
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=exc,
-        )
+        ) from exc
 
     graph_result = invoke_graph(messages)
 
@@ -107,7 +107,7 @@ def run_stateless_runs_post(body: RunCreateStateless) -> Union[Any, ErrorRespons
         "metadata": {"id": message_id},
     }
 
-    logger.info(f"Payload: {payload}")
+    logger.info("Payload: %s", payload)
 
     # In a real application, additional processing (like starting a background task) would occur here.
     return JSONResponse(content=payload, status_code=status.HTTP_200_OK)

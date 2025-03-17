@@ -127,11 +127,11 @@ def invoke_graph(
             raise KeyError(f"Last message does not contain 'content': {last_message}")
 
         ai_message_content = last_message["content"]
-        logger.info(f"AI message content: {ai_message_content}")
+        logger.info("AI message content: %s", ai_message_content)
         return messages_list
 
     except Exception as e:
-        logger.error(f"Error invoking graph: {e}", exc_info=True)
+        logger.error("Error invoking graph: %s", e, exc_info=True)
         return [{"role": "assistant", "content": "Error processing user message"}]
 
 

@@ -1,9 +1,9 @@
-langgraph==0.3.2
-langchain==0.3.19
-langgraph-sdk==0.1.53
+langgraph==0.3.11
+langchain==0.3.20
+langgraph-sdk==0.1.57
 fastapi[standard]==0.115.11
 requests==2.32.3
-starlette==0.46.0
+starlette==0.46.1
 uvicorn==0.34.0
 packaging==24.2
 python-dotenv==1.0.1
@@ -11,9 +11,9 @@ pydantic==2.10.6
 pydantic-settings==2.8.1
 uvicorn==0.34.0
 requests==2.32.3
-langgraph-cli[inmem]==0.1.74
+langgraph-cli[inmem]==0.1.77
 langchain_openai==0.3.8
 python-json-logger==3.3.0
-ap-rest-client==0.0.4
+ap-rest-client==0.0.6
 # If you need to debug langgraph studio
 # debugpy==1.8.12
